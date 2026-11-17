@@ -496,6 +496,7 @@ footer .logo img{height:48px;margin:0}
 .team .ph{height:320px}
 @media (max-width:720px){.team .boss,.team .ph{height:300px}}
 #guarantee{background:var(--ivory2)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 </style>
 </head>
 <body>
@@ -521,7 +522,7 @@ footer .logo img{height:48px;margin:0}
   <div class="hero-text">
    <h1>Монтаж инженерной сантехники в&nbsp;Москве: <span class="gold">смета за&nbsp;24&nbsp;часа</span></h1>
    <p class="lead">Водоснабжение, канализация, отопление и&nbsp;котельные. Исполнительную схему передаём до&nbsp;отделки</p>
-   <form class="lead-form" novalidate>
+   <form class="lead-form" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="lead-row">
      <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" aria-label="Телефон" autocomplete="tel">
      <button class="btn" type="submit">Получить смету на&nbsp;монтаж<span class="btn-badge">бесплатно</span></button>
@@ -592,7 +593,7 @@ footer .logo img{height:48px;margin:0}
    </div>
    <div class="q-step">
     <h3>Куда прислать расчёт?</h3>
-    <form class="lead-form" novalidate>
+    <form class="lead-form" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
      <div class="tabs">
       <label><input type="radio" name="ch" value="call" checked><span>Звонок</span></label>
       <label><input type="radio" name="ch" value="tg"><span>Telegram</span></label>
@@ -694,7 +695,7 @@ footer .logo img{height:48px;margin:0}
  <div class="wrap">
   <h2>Рассчитайте стоимость монтажа <span class="gold">на&nbsp;вашем объекте</span></h2>
   <p class="lead" style="margin-left:auto;margin-right:auto">Выезд на&nbsp;замер бесплатный, смета за&nbsp;24&nbsp;часа</p>
-  <form class="lead-form" novalidate>
+  <form class="lead-form" novalidate><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
    <div class="lead-row">
     <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" aria-label="Телефон" autocomplete="tel">
     <button class="btn" type="submit">Получить смету на&nbsp;монтаж<span class="btn-badge">бесплатно</span></button>
@@ -781,16 +782,33 @@ console.assert(maskPhone('89001234567')==='+7 (900) 123-45-67','maskPhone');
 
 document.querySelectorAll('input[type=tel]').forEach(function(i){i.addEventListener('input',function(){i.value=maskPhone(i.value)})});
 
-// shortcut: заявки никуда не отправляются, при запуске подключить CRM или Telegram-бота вместо показа успеха
+// Адрес функции-посредника в Yandex Cloud, она пересылает заявку в Telegram-бота
+var LEAD_URL='';
+function sel(n){var o=document.querySelectorAll('.q-step')[n].querySelector('.opt.sel .lbl');return o?o.textContent.replace(/\u00a0/g,' '):''}
 document.querySelectorAll('.lead-form').forEach(function(f){
  f.addEventListener('submit',function(e){
   e.preventDefault();
-  var err=f.querySelector('.err');
-  if(f.querySelector('input[type=tel]').value.length!==18){err.textContent='Введите номер телефона полностью';err.style.display='block';return}
-  if(!f.querySelector('.consent input').checked){err.textContent='Отметьте согласие на обработку данных';err.style.display='block';return}
-  err.style.display='none';f.style.display='none';
-  var ok=f.parentNode.querySelector('.ok');ok.style.display='block';
-  var back=f.parentNode.querySelector('.back');if(back)back.style.display='none';
+  var err=f.querySelector('.err'),btn=f.querySelector('button[type=submit]');
+  function fail(t){err.textContent=t;err.style.display='block'}
+  if(f.querySelector('input[type=tel]').value.length!==18)return fail('Введите номер телефона полностью');
+  if(!f.querySelector('.consent input').checked)return fail('Отметьте согласие на обработку данных');
+  err.style.display='none';
+  function done(){
+   f.style.display='none';
+   f.parentNode.querySelector('.ok').style.display='block';
+   var back=f.parentNode.querySelector('.back');if(back)back.style.display='none';
+  }
+  // shortcut: без адреса функции заявка никуда не уходит, LEAD_URL заполняется после развёртывания функции
+  if(!LEAD_URL)return done();
+  var quiz=!!f.closest('#quiz'),ch=f.querySelector('input[name=ch]:checked');
+  var data={phone:f.querySelector('input[type=tel]').value,website:f.querySelector('.hp').value,
+   form:quiz?'quiz':f.closest('.final')?'final':'hero',channel:ch?ch.value:'call',
+   service:quiz?sel(0):'',object:quiz?sel(1):''};
+  btn.disabled=true;
+  // text/plain не требует предварительного CORS-запроса
+  fetch(LEAD_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)})
+   .then(function(r){if(!r.ok)throw r;done()})
+   .catch(function(){btn.disabled=false;fail('Не удалось отправить заявку. Позвоните нам: +7 (999) 901-48-14')});
  });
 });
 
