@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Конструктор сайта | Ваш Сантехник</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+:root{--bg:#0d0d0e;--panel:#17171a;--line:#2d2c2b;--text:#f3efe7;--muted:#aaa59b;--gold:#d2a94e;--gold2:#f0d48c;--bad:#ff8a73;--ok:#7fd49a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.45 Inter,Segoe UI,Arial,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 12px}
+button:hover{border-color:var(--gold)}
+button.primary{background:linear-gradient(135deg,#f0d48c,#d2a94e 55%,#b4873a);color:#14110a;border:0;font-weight:700}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+input,select{background:#101012;border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+a{color:var(--gold2)}
+[hidden]{display:none!important}
+
+#login{min-height:100%;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left))}
+.box{max-width:520px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px}
+.box h1{margin:0 0 6px;font-size:24px}
+.box ol{padding-left:20px;color:var(--muted)}
+.box li{margin:6px 0}
+.row2{display:flex;gap:10px;margin-top:16px}
+
+#app{height:100%;display:grid;grid-template-rows:auto 1fr;grid-template-columns:300px 1fr}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:#000}
+header b{color:var(--gold2);margin-right:auto}
+header select{width:auto}
+#state{font-size:13px;color:var(--muted)}
+#state.dirty{color:var(--gold2)}
+aside{overflow:auto;border-right:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:18px}
+aside h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.sec-item{display:flex;align-items:center;gap:4px;padding:6px;border-radius:8px;border:1px solid transparent}
+.sec-item.active{border-color:var(--gold)}
+.sec-item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;font-size:14px}
+.sec-item button{padding:3px 7px;font-size:13px}
+.imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.imgs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--line)}
+.imgs img:hover{border-color:var(--gold)}
+.help{font-size:13px;color:var(--muted)}
+.help p{margin:0 0 6px}
+main{position:relative;overflow:auto;background:#222;display:flex;justify-content:center}
+#frame{border:0;width:100%;height:100%;background:#000}
+main.mobile #frame{width:390px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#000;border:1px solid var(--gold);padding:10px 16px;border-radius:10px;z-index:9;max-width:90vw}
+#toast.bad{border-color:var(--bad)}
+@media (max-width:820px){#app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}aside{max-height:38vh;border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+
+<div id="login">
+ <div class="box">
+  <h1>Конструктор сайта</h1>
+  <p class="help">Для входа нужен ключ доступа GitHub. Он хранится только в этом браузере.</p>
+  <ol>
+   <li>Откройте <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">создание ключа на GitHub</a></li>
+   <li>Repository access: <b>Only select repositories</b> → <b>vashsantehnik</b></li>
+   <li>Permissions → Repository permissions → <b>Contents: Read and write</b></li>
+   <li>Нажмите <b>Generate token</b> и вставьте ключ ниже</li>
+  </ol>
+  <label for="token">Ключ доступа</label>
+  <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+  <div class="row2"><button class="primary" id="enter">Войти</button></div>
+  <p id="loginErr" class="help" style="color:var(--bad)"></p>
+ </div>
+</div>
+
+<div id="app" hidden>
+ <header>
+  <b>Ваш Сантехник: конструктор</b>
+  <select id="page" aria-label="Страница">
+   <option value="index.html">Главная</option>
+   <option value="policy.html">Политика конфиденциальности</option>
+   <option value="consent.html">Согласие на обработку данных</option>
+  </select>
+  <button id="device">Телефон</button>
+  <button id="showHidden">Показать скрытое</button>
+  <button id="reset">Отменить правки</button>
+  <span id="state">Без изменений</span>
+  <button class="primary" id="save" disabled>Сохранить на сайт</button>
+  <button id="logout">Выйти</button>
+ </header>
+ <aside>
+  <section>
+   <h2>Блоки страницы</h2>
+   <div id="sections"></div>
+  </section>
+  <section>
+   <h2>Добавить блок</h2>
+   <select id="tpl" aria-label="Шаблон блока"></select>
+   <div class="row2"><button id="add">Добавить после выбранного</button></div>
+  </section>
+  <section id="linkBox" hidden>
+   <h2>Ссылка выбранной кнопки</h2>
+   <input id="href" aria-label="Адрес ссылки">
+   <p class="help">#quiz ведёт на квиз, tel:+79999014814 звонит, https://... открывает сайт</p>
+  </section>
+  <section>
+   <h2>Фото на странице</h2>
+   <div class="imgs" id="imgs"></div>
+  </section>
+  <section class="help">
+   <h2>Как пользоваться</h2>
+   <p>Щёлкните по тексту на странице и правьте его прямо там.</p>
+   <p>Щёлкните по фото, чтобы заменить его. Фото сжимается автоматически.</p>
+   <p>Скрытые части (шаги квиза, меню на телефоне) правятся после кнопки «Показать скрытое».</p>
+   <p>После сохранения сайт обновляется за 1-2 минуты.</p>
+  </section>
+ </aside>
+ <main id="main"><iframe id="frame" title="Редактируемая страница" sandbox="allow-same-origin"></iframe></main>
+</div>
+<input type="file" id="pick" accept="image/*" hidden>
+<div id="toast" hidden></div>
+
+<script>
+var REPO='zavulon2804-commits/vashsantehnik',BRANCH='main',API='https://api.github.com/repos/'+REPO;
+var EDIT='h1,h2,h3,h4,p,summary,li,small,label,blockquote,.lbl,.cap,.price,.row>div,.btn,.tag,.note,.anchors b,.anchors span,.num b,.links a,.mobile-menu a,.fab-list a,.fab-hint,.ok,.ph,.tel,.foot a,.copy span,.copy a,.ticker span';
+// shortcut: на localhost страница читается и сохраняется локально без GitHub, это только для проверки конструктора
+var LOCAL=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+var token='',page='index.html',sha='',original='',doc=null,dirty=false,pickTarget=null,active=null,mobile=false,hiddenOn=false;
+var $=function(s){return document.querySelector(s)},frame=$('#frame');
+
+function toast(t,bad){var e=$('#toast');e.textContent=t;e.className=bad?'bad':'';e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){e.hidden=true},bad?9000:4000)}
+function setDirty(v){dirty=v;$('#save').disabled=!v;$('#state').textContent=v?'Есть несохранённые правки':'Без изменений';$('#state').className=v?'dirty':''}
+function store(k,v){try{v===undefined?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
+function read(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+
+function b64(str){var b=new TextEncoder().encode(str),s='';for(var i=0;i<b.length;i+=32768)s+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(s)}
+function unb64(s){var bin=atob(s.replace(/\n/g,''));return new TextDecoder().decode(Uint8Array.from(bin,function(c){return c.charCodeAt(0)}))}
+
+function gh(path,opt){
+ opt=opt||{};
+ return fetch(API+path,{method:opt.method||'GET',cache:'no-store',body:opt.body,
+  headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'}})
+ .then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(r.status+': '+t.slice(0,160))});return r.json()});
+}
+function putFile(path,content64,message,prevSha){
+ var body={message:message,content:content64,branch:BRANCH};if(prevSha)body.sha=prevSha;
+ if(LOCAL){console.log('LOCAL save',path,content64.length);return Promise.resolve({content:{sha:'local'}})}
+ return gh('/contents/'+path,{method:'PUT',body:JSON.stringify(body)});
+}
+
+/* вход */
+function login(t){
+ token=t;
+ if(LOCAL)return start();
+ return gh('').then(function(r){
+  if(!r.permissions||!r.permissions.push)throw new Error('У ключа нет права записи в репозиторий');
+  store('cms-token',t);start();
+ }).catch(function(e){token='';$('#loginErr').textContent='Не удалось войти. '+e.message});
+}
+$('#enter').onclick=function(){var t=$('#token').value.trim();if(t)login(t)};
+$('#token').onkeydown=function(e){if(e.key==='Enter')$('#enter').click()};
+$('#logout').onclick=function(){if(dirty&&!confirm('Есть несохранённые правки. Выйти без сохранения?'))return;store('cms-token');location.reload()};
+function start(){$('#login').hidden=true;$('#app').hidden=false;load(page)}
+
+/* загрузка страницы */
+function load(p){
+ page=p;setDirty(false);
+ var get=LOCAL?fetch(p+'?t='+Date.now()).then(function(r){return r.text()}).then(function(t){sha='local';return t})
+  :gh('/contents/'+p+'?ref='+BRANCH).then(function(r){sha=r.sha;return unb64(r.content)});
+ return get.then(function(html){original=html;render(html)}).catch(function(e){toast('Не удалось открыть страницу. '+e.message,true)});
+}
+function render(html){
+ frame.onload=prepare;
+ frame.srcdoc=html; // скрипты сайта в редакторе не выполняются, поэтому страница остаётся чистой для сохранения
+}
+
+function prepare(){
+ doc=frame.contentDocument;
+ // шрифты сайта грузятся скриптом onload, которого здесь нет
+ doc.querySelectorAll('link[media="print"]').forEach(function(l){l.setAttribute('data-cms-media','print');l.media='all'});
+ var st=doc.createElement('style');st.id='cms-style';
+ st.textContent='[contenteditable]{outline:1px dashed transparent;outline-offset:3px;cursor:text}[contenteditable]:hover{outline-color:rgba(210,169,78,.7)}[contenteditable]:focus{outline:2px solid #d2a94e}img{cursor:pointer}img:hover{outline:3px solid #d2a94e;outline-offset:-3px}.cms-active{outline:3px solid #d2a94e!important;outline-offset:-3px}'+
+  '.cms-show .q-step,.cms-show .ok,.cms-show .fab-list{display:block!important}.cms-show .mobile-menu{display:block!important;max-height:none!important}.cms-show .fab-hint{opacity:1!important}';
+ doc.head.appendChild(st);
+ doc.documentElement.classList.toggle('cms-show',hiddenOn);
+ markEditable(doc.body);
+ doc.addEventListener('input',function(){setDirty(true)});
+ doc.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  e.preventDefault();
+  if(e.shiftKey)doc.execCommand('insertLineBreak');
+ });
+ doc.addEventListener('paste',function(e){e.preventDefault();doc.execCommand('insertText',false,e.clipboardData.getData('text/plain'))});
+ doc.addEventListener('click',function(e){
+  var a=e.target.closest('a,button');if(a)e.preventDefault();
+  var img=e.target.closest('img');
+  if(img){pickImage(img);return}
+  var link=e.target.closest('a[href]');
+  $('#linkBox').hidden=!link;
+  if(link){$('#href').value=link.getAttribute('href');$('#href').oninput=function(){link.setAttribute('href',this.value);setDirty(true)}}
+  var sec=e.target.closest('main>section,body>section,main,body>div');if(sec&&sec.tagName==='SECTION')select(sec,false);
+ },true);
+ doc.addEventListener('submit',function(e){e.preventDefault()},true);
+ buildSections();buildImages();
+}
+function markEditable(root){
+ root.querySelectorAll(EDIT).forEach(function(el){
+  if(el.closest('svg')||el.parentElement.closest('[contenteditable]'))return;
+  el.setAttribute('contenteditable','true');el.setAttribute('spellcheck','true');
+ });
+}
+
+/* блоки */
+function sections(){return [].slice.call(doc.querySelectorAll('main>section, body>main>section'))}
+function label(s){var h=s.querySelector('h1,h2');var t=h?h.textContent.replace(/\s+/g,' ').trim():'';return (t||s.id||'Блок').slice(0,48)}
+function buildSections(){
+ var box=$('#sections');box.innerHTML='';
+ var list=sections();
+ if(!list.length){box.innerHTML='<p class="help">На этой странице нет блоков, правьте текст прямо в ней</p>';return}
+ list.forEach(function(s,i){
+  var d=document.createElement('div');d.className='sec-item'+(s===active?' active':'');
+  var n=document.createElement('span');n.textContent=(i+1)+'. '+label(s);n.title='Показать блок';n.onclick=function(){select(s,true)};
+  d.appendChild(n);
+  [['↑','Выше',function(){if(s.previousElementSibling&&s.previousElementSibling.tagName==='SECTION')s.parentNode.insertBefore(s,s.previousElementSibling);changed(s)}],
+   ['↓','Ниже',function(){var nx=s.nextElementSibling;if(nx&&nx.tagName==='SECTION')s.parentNode.insertBefore(nx,s);changed(s)}],
+   ['⧉','Копировать блок',function(){var c=s.cloneNode(true);c.id=uid(s.id||'block');c.classList.remove('cms-active');s.after(c);changed(c)}],
+   ['✕','Удалить блок',function(){if(!confirm('Удалить блок «'+label(s)+'»?'))return;s.remove();active=null;changed(null)}]
+  ].forEach(function(b){var x=document.createElement('button');x.textContent=b[0];x.title=b[1];x.setAttribute('aria-label',b[1]);x.onclick=b[2];d.appendChild(x)});
+  box.appendChild(d);
+ });
+}
+function uid(base){var i=2,id;do{id=base.replace(/-\d+$/,'')+'-'+i++}while(doc.getElementById(id));return id}
+function changed(s){setDirty(true);if(s)select(s,true);else buildSections();buildImages()}
+function select(s,scroll){
+ if(active)active.classList.remove('cms-active');
+ active=s;s.classList.add('cms-active');
+ if(scroll)s.scrollIntoView({block:'start'});
+ buildSections();
+}
+
+/* шаблоны новых блоков: используют стили сайта, тексты меняются прямо на странице */
+var IMG='img/work/g1.webp';
+var TPL={
+ split:['Текст и фото','<section class="sec light"><div class="wrap tpl-split"><div><h2>Заголовок блока</h2><p class="lead">Короткий текст: один факт, ради которого блок существует</p><a class="btn" href="#quiz">Рассчитать стоимость</a></div><img class="tpl-img" src="'+IMG+'" alt="Фото объекта" loading="lazy"></div></section>'],
+ cards:['Три преимущества','<section class="sec dark"><div class="wrap"><div class="head"><h2>Заголовок блока</h2></div><div class="tpl-cards"><div><h3>Первый пункт</h3><p>Короткое пояснение</p></div><div><h3>Второй пункт</h3><p>Короткое пояснение</p></div><div><h3>Третий пункт</h3><p>Короткое пояснение</p></div></div></div></section>'],
+ quote:['Отзыв клиента','<section class="sec dark"><div class="wrap center"><blockquote class="tpl-quote">«Главная фраза из отзыва клиента»</blockquote><p class="lead">Имя клиента, объект</p></div></section>'],
+ cta:['Призыв с кнопкой','<section class="sec light"><div class="wrap center"><h2>Заголовок призыва</h2><p class="lead">Короткая строка с выгодой для клиента</p><a class="btn" href="#quiz">Рассчитать стоимость</a></div></section>'],
+ photos:['Сетка фото','<section class="sec black"><div class="wrap"><div class="head"><h2>Заголовок блока</h2></div><div class="tpl-grid"><img src="img/work/g1.webp" alt="Фото объекта" loading="lazy"><img src="img/work/g2.webp" alt="Фото объекта" loading="lazy"><img src="img/work/g3.webp" alt="Фото объекта" loading="lazy"></div></div></section>'],
+ faq:['Вопросы и ответы','<section class="sec light"><div class="wrap"><div class="head center"><h2>Вопросы и ответы</h2></div><div class="faq"><details open><summary>Вопрос клиента</summary><p>Короткий ответ</p></details><details><summary>Вопрос клиента</summary><p>Короткий ответ</p></details><details><summary>Вопрос клиента</summary><p>Короткий ответ</p></details></div></div></section>']
+};
+Object.keys(TPL).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=TPL[k][0];$('#tpl').appendChild(o)});
+$('#add').onclick=function(){
+ if(!doc)return;
+ var list=sections();
+ var t=doc.createElement('template');t.innerHTML=TPL[$('#tpl').value][1];
+ var s=t.content.firstElementChild;s.id=uid('block');
+ var after=active||list[list.length-2]||list[list.length-1];
+ if(after)after.after(s);else (doc.querySelector('main')||doc.body).appendChild(s);
+ markEditable(s);changed(s);toast('Блок добавлен. Щёлкните по тексту или фото, чтобы заменить их');
+};
+
+/* фото */
+function buildImages(){
+ var box=$('#imgs');box.innerHTML='';
+ doc.querySelectorAll('img').forEach(function(img){
+  if(!img.getAttribute('src')||img.closest('#lb'))return;
+  var t=document.createElement('img');t.src=img.src;t.alt=img.alt||'Фото';t.title='Заменить: '+(img.alt||img.getAttribute('src'));
+  t.onclick=function(){img.scrollIntoView({block:'center'});pickImage(img)};box.appendChild(t);
+ });
+}
+function pickImage(img){pickTarget=img;$('#pick').value='';$('#pick').click()}
+$('#pick').onchange=function(){
+ var f=this.files[0],img=pickTarget;if(!f||!img)return;
+ toast('Загружаю фото...');
+ compress(f).then(function(res){
+  var path='img/uploads/'+Date.now()+'.webp';
+  return blobB64(res.blob).then(function(c){return putFile(path,c,'Фото для сайта: '+f.name)}).then(function(){
+   img.setAttribute('data-cms-src',path);
+   img.src=URL.createObjectURL(res.blob); // на сайте фото появится после публикации, в редакторе показываем сразу
+   img.removeAttribute('srcset');
+   if(img.hasAttribute('width')){img.setAttribute('width',res.w);img.setAttribute('height',res.h)}
+   setDirty(true);buildImages();toast('Фото загружено. Нажмите «Сохранить на сайт»');
+  });
+ }).catch(function(e){toast('Не удалось загрузить фото. '+e.message,true)});
+};
+function compress(file){
+ return createImageBitmap(file).then(function(bmp){
+  var k=Math.min(1,1600/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');
+  c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  return new Promise(function(ok){c.toBlob(function(b){ok({blob:b,w:c.width,h:c.height})},'image/webp',.8)});
+ });
+}
+function blobB64(b){return new Promise(function(ok,no){var r=new FileReader();r.onload=function(){ok(String(r.result).split(',')[1])};r.onerror=no;r.readAsDataURL(b)})}
+
+/* сохранение */
+function serialize(){
+ var out='';
+ doc.childNodes.forEach(function(n){
+  if(n.nodeType===10)out+='<!doctype html>\n';
+  else if(n.nodeType===8)out+='<!--'+n.data+'-->\n';
+  else if(n.nodeType===1){
+   var r=n.cloneNode(true);
+   r.classList.remove('cms-show');if(!r.getAttribute('class'))r.removeAttribute('class');
+   r.querySelectorAll('#cms-style').forEach(function(e){e.remove()});
+   r.querySelectorAll('[contenteditable]').forEach(function(e){e.removeAttribute('contenteditable');e.removeAttribute('spellcheck')});
+   r.querySelectorAll('.cms-active').forEach(function(e){e.classList.remove('cms-active');if(!e.getAttribute('class'))e.removeAttribute('class')});
+   r.querySelectorAll('[data-cms-src]').forEach(function(e){e.setAttribute('src',e.getAttribute('data-cms-src'));e.removeAttribute('data-cms-src')});
+   r.querySelectorAll('[data-cms-media]').forEach(function(e){e.setAttribute('media',e.getAttribute('data-cms-media'));e.removeAttribute('data-cms-media')});
+   out+=r.outerHTML+'\n';
+  }
+ });
+ return out;
+}
+window.cmsSerialize=serialize;
+$('#save').onclick=function(){
+ var html=serialize();
+ // защита от поломки: страница должна остаться целой
+ if(html.length<original.length*0.5||html.indexOf('</body>')<0){toast('Сохранение остановлено: страница выглядит повреждённой. Нажмите «Отменить правки»',true);return}
+ $('#save').disabled=true;toast('Сохраняю...');
+ putFile(page,b64(html),'Правка сайта из конструктора: '+page,sha).then(function(r){
+  sha=r.content.sha;original=html;setDirty(false);toast('Сохранено. Сайт обновится через 1-2 минуты');
+ }).catch(function(e){
+  $('#save').disabled=false;
+  toast(/409|does not match/.test(e.message)?'Страницу изменили в другом окне. Откройте её заново и повторите правку':'Не удалось сохранить. '+e.message,true);
+ });
+};
+$('#reset').onclick=function(){if(dirty&&!confirm('Отменить все несохранённые правки?'))return;active=null;load(page)};
+$('#page').onchange=function(){var p=this.value;if(dirty&&!confirm('Есть несохранённые правки. Перейти без сохранения?')){this.value=page;return}active=null;load(p)};
+$('#device').onclick=function(){mobile=!mobile;$('#main').classList.toggle('mobile',mobile);this.textContent=mobile?'Компьютер':'Телефон'};
+$('#showHidden').onclick=function(){hiddenOn=!hiddenOn;if(doc)doc.documentElement.classList.toggle('cms-show',hiddenOn);this.textContent=hiddenOn?'Спрятать скрытое':'Показать скрытое'};
+addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+
+var saved=read('cms-token');
+if(LOCAL)start();else if(saved)login(saved);
+</script>
+</body>
+</html>
