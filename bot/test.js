@@ -20,5 +20,9 @@ assert.strictEqual(buildMessage({ ...lead, website: 'spam' }), '');
   assert.strictEqual((await handler(ev({ body: JSON.stringify({ ...lead, website: 'x' }) }))).statusCode, 200);
   assert.strictEqual(sent.length, 1, 'spam must not reach Telegram');
   assert.strictEqual((await handler(ev({ httpMethod: 'OPTIONS' }))).statusCode, 204);
+
+  process.env.TG_API = 'https://relay.example';
+  global.fetch = async (url) => { assert.ok(url.startsWith('https://relay.example/bot')); throw new Error('down'); };
+  assert.strictEqual((await handler(ev())).statusCode, 502, 'network error must give 502, not hang');
   console.log('all bot tests passed');
 })();

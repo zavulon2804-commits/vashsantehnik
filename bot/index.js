@@ -1,5 +1,5 @@
 // Yandex Cloud Function: принимает заявку с сайта и пересылает её в Telegram.
-// Переменные окружения функции: BOT_TOKEN (токен от @BotFather), CHAT_ID (кому слать заявки).
+// Переменные окружения функции: BOT_TOKEN (токен от @BotFather), CHAT_ID (кому слать заявки), TG_API (адрес Worker).
 const ORIGINS = ['https://vashsantehnik.pro', 'https://www.vashsantehnik.pro'];
 const CHANNELS = { call: 'Звонок', tg: 'Telegram', max: 'Max' };
 const FORMS = { hero: 'Первый экран', quiz: 'Квиз', final: 'Финальная форма' };
@@ -42,11 +42,18 @@ module.exports.handler = async (event) => {
   if (text === null) return reply(400, 'bad lead');
   if (text === '') return reply(200, 'ok');
 
-  const r = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: process.env.CHAT_ID, text }),
-  });
-  return r.ok ? reply(200, 'ok') : reply(502, 'telegram error');
+  // TG_API: адрес Cloudflare Worker, api.telegram.org из Yandex Cloud недоступен
+  const api = process.env.TG_API || 'https://api.telegram.org';
+  try {
+    const r = await fetch(`${api}/bot${process.env.BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: process.env.CHAT_ID, text }),
+      signal: AbortSignal.timeout(8000),
+    });
+    return r.ok ? reply(200, 'ok') : reply(502, 'telegram error ' + r.status);
+  } catch (e) {
+    return reply(502, 'telegram unreachable');
+  }
 };
 module.exports.buildMessage = buildMessage;
